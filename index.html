@@ -13,7 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        /* ===== ПОЛНЫЙ НАБОР СТИЛЕЙ (без изменений) ===== */
+        /* ===== ВАШИ СТИЛИ (полностью сохранены) ===== */
         *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
         body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0f12;overflow:hidden;height:100vh;color:#eef;touch-action:manipulation}
         .screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:2000;background:radial-gradient(circle at 20% 30%,#0a1f1a,#030a08)}
@@ -262,9 +262,9 @@
 </div>
 
 <script>
-// =================================================================
-// 1. НАСТРОЙКИ FIREBASE
-// =================================================================
+// ============================================================
+// 1. НАСТРОЙКИ FIREBASE (ваш проект keys-c7467)
+// ============================================================
 const firebaseConfig = {
     apiKey: "AIzaSyCksMAKAI1U2gXRHefO0vAZYbY4Y6ES1Sg",
     authDomain: "keys-c7467.firebaseapp.com",
@@ -280,14 +280,13 @@ const usersRef = db.ref('users');
 const sessionsRef = db.ref('sessions');
 const gamesRef = db.ref('games');
 
-// =================================================================
-// 2. ХЕШИРОВАНИЕ (SHA-256) и ЛИЦЕНЗИОННЫЕ КЛЮЧИ (ВАШИ 21 КЛЮЧ)
-// =================================================================
+// ============================================================
+// 2. ХЕШИРОВАНИЕ (SHA-256) и ЛИЦЕНЗИОННЫЕ КЛЮЧИ (все 21)
+// ============================================================
 function hashSHA256(text) {
     return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex);
 }
 
-// ВАШИ ЛИЦЕНЗИОННЫЕ КЛЮЧИ (все 21, которые вы давали)
 const VALID_KEYS_ORIGINAL = [
     "8n2ks5jf92jdn30qpeor-1k4slp",
     "9n3ks2jf92jdn30qpeor-2k5slr",
@@ -313,9 +312,9 @@ const VALID_KEYS_ORIGINAL = [
 ];
 const VALID_KEYS_HASHES = VALID_KEYS_ORIGINAL.map(k => hashSHA256(k));
 
-// =================================================================
-// 3. УПРАВЛЕНИЕ АККАУНТАМИ И СЕССИЯМИ (как в первом скрипте)
-// =================================================================
+// ============================================================
+// 3. УПРАВЛЕНИЕ АККАУНТАМИ И СЕССИЯМИ (ваша система)
+// ============================================================
 let currentUser = null;
 let currentSessionToken = null;
 const authOverlay = document.getElementById('authOverlay');
@@ -394,7 +393,6 @@ async function login(login, password) {
     } catch(err) { authMessage.innerText = "Ошибка: " + err.message; return false; }
 }
 
-// ====== АКТИВАЦИЯ КЛЮЧА (локальная проверка + запись в Firebase usedKeys) ======
 async function activateKey(key) {
     if(!key) { authMessage.innerText = "Введите ключ"; return false; }
     const keyHash = hashSHA256(key);
@@ -402,15 +400,12 @@ async function activateKey(key) {
         authMessage.innerText = "Неверный лицензионный ключ";
         return false;
     }
-    // Проверка, не использован ли ключ
     const usedSnap = await db.ref('usedKeys/' + keyHash).get();
     if(usedSnap.exists()) {
         authMessage.innerText = "Этот ключ уже был использован другим игроком!";
         return false;
     }
-    // Записываем использование
     await db.ref('usedKeys/' + keyHash).set(currentUser);
-    // Обновляем пользователя
     const userRef = usersRef.child(currentUser);
     await userRef.update({ keyUsed: keyHash });
     authMessage.innerText = "Ключ активирован! Запуск игры...";
@@ -498,9 +493,9 @@ authSubmitBtn.onclick = async () => {
 toggleLink.onclick = toggleMode;
 restoreSession();
 
-// =================================================================
-// 4. СИСТЕМА ЭЛО (сохранение в users/${login}/elo)
-// =================================================================
+// ============================================================
+// 4. СИСТЕМА ЭЛО
+// ============================================================
 async function updateElo(win, mode) {
     if (!currentUser) return;
     let eloChange = 0;
@@ -524,9 +519,9 @@ async function updateElo(win, mode) {
     console.log(`Эло изменено на ${eloChange}, теперь ${newElo}`);
 }
 
-// =================================================================
+// ============================================================
 // 5. РЕЙТИНГ (топ игроков)
-// =================================================================
+// ============================================================
 document.getElementById('rankBtn').onclick = function() {
     document.getElementById('rankModal').style.display = 'block';
     loadRanking();
@@ -573,9 +568,9 @@ async function loadRanking() {
     }
 }
 
-// =================================================================
-// 6. МУЛЬТИПЛЕЕР (комнаты, лобби) — адаптирован под логин
-// =================================================================
+// ============================================================
+// 6. МУЛЬТИПЛЕЕР (ЛОББИ И КОМНАТЫ) — ваша реализация
+// ============================================================
 let currentRoomId = null;
 let gameListenerRef = null;
 let isHost = false;
@@ -769,9 +764,9 @@ function leaveLobby() {
     document.getElementById('roomDisplay').innerHTML = '';
 }
 
-// =================================================================
-// 7. ИГРОВОЙ ДВИЖОК (полный, с сортировкой оружия и шансами ПВО)
-// =================================================================
+// ============================================================
+// 7. ИГРОВОЙ ДВИЖОК (ПОЛНЫЙ, С НОВЫМИ РАКЕТАМИ)
+// ============================================================
 let map, gameActive = false;
 let resources = 300;
 let buildings = [], zones = [], projectiles = [];
@@ -785,7 +780,7 @@ let isAI = false;
 let isSandbox = false;
 let russiaGeoJSON = null, ukraineGeoJSON = null, bordersLoaded = false;
 let radarAnimationInterval = null, aiInterval = null, economyInterval = null;
-let attackType = 'drone', attackCount = 1;
+let attackType = null, attackCount = 1;
 let maxRadars = 8, maxPvo = 12, maxPowerPlants = 5, maxRefineries = 3;
 
 // ---- БАЗОВЫЙ СПИСОК ВСЕХ ГОРОДОВ ----
@@ -929,21 +924,21 @@ document.getElementById('startGameBtn').onclick = function() {
     initGameMapAndLogic(preparedCities);
 };
 
-// ---- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ИКОНОК ----
+// ---- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ИКОНОК (ОБНОВЛЕННЫЕ) ----
 function getMissileImage(type, team) {
-    if (type === 'drone') {
-        return (team === 'ukraine') ? 'images/drone_ua.png' : 'images/drone.png';
-    }
-    const map = {
-        cruise: 'images/cruise.png',
-        ballistic: 'images/ballistic.png',
-        hypersonic: 'images/hypersonic.png',
-        x101: 'images/x101.png',
-        kalibr: 'images/kalibr.png',
-        kinzhal: 'images/kinzhal.png',
-        iskander: 'images/iskander.png'
-    };
-    return map[type] || 'images/missile.png';
+    // Российские
+    if (type === 'shahed') return (team === 'russia') ? 'images/drone.png' : 'images/droneua.png';
+    if (type === 'x101') return 'images/x101.png';
+    if (type === 'iskander') return 'images/iskander.png';
+    if (type === 'kinzhal') return 'images/kinzhal.png';
+    if (type === 'kalibr') return 'images/kalibr.png';
+    if (type === 'geran5') return 'images/geran5.png';
+    // Украинские
+    if (type === 'lutyi') return (team === 'ukraine') ? 'images/droneua.png' : 'images/drone.png';
+    if (type === 'grom2') return 'images/grom2.png';
+    if (type === 'flamingo') return 'images/flamingo.png';
+    if (type === 'stormshadow') return 'images/stormshadow.png';
+    return 'images/missile.png';
 }
 
 function getMissileIcon(type, team) {
@@ -955,6 +950,7 @@ function getMissileIcon(type, team) {
     }
 }
 
+// ---- ОСТАЛЬНЫЕ ФУНКЦИИ ИКОНОК (без изменений) ----
 function createCityMarker(city) {
     const percent = Math.floor((city.hp / city.baseHp) * 100);
     const hpClass = percent > 60 ? 'hp-high' : (percent > 30 ? 'hp-mid' : 'hp-low');
@@ -968,72 +964,36 @@ function createCityMarker(city) {
     return L.divIcon({ html, className: '', iconSize: [100, 60], iconAnchor: [50, 30] });
 }
 
-// ---- ИНИЦИАЛИЗАЦИЯ ИГРЫ ----
-function initGameMapAndLogic(citiesArray) {
-    document.getElementById('menuScreen').style.display = 'none';
-    document.getElementById('lobbyScreen').style.display = 'none';
-    document.getElementById('gameContainer').style.display = 'block';
-    if(map) map.remove();
-    map = L.map('map', { zoomControl: false }).setView([55.0,40.0],5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}).addTo(map);
-    let ld = document.createElement('div'); ld.className='loading-indicator'; ld.innerText='Загрузка границ...'; document.body.appendChild(ld);
-    loadRealBorders(()=>{
-        if(ld) ld.remove();
-        initZones(citiesArray);
-        buildings = []; radars = []; pvoSystems = []; powerPlants = []; refineries = []; rocketFactories = []; projectiles = [];
-        if(isSandbox){
-            resources = 999999;
-            maxRadars = 999; maxPvo = 999; maxPowerPlants = 999; maxRefineries = 999;
-        } else {
-            if(setupDifficulty === "EASY") resources = 400;
-            else if(setupDifficulty === "NORMAL") resources = 300;
-            else if(setupDifficulty === "HARD") resources = 220;
-            else resources = 150;
-            maxRadars = 8; maxPvo = 12; maxPowerPlants = 5; maxRefineries = 3;
-        }
-        airportPlaced = false; updateUI();
-        map.off('click');
-        map.on('click', (e) => {
-            if(!airportPlaced){
-                let lat = e.latlng.lat, lng = e.latlng.lng;
-                if(!isOwnTerritory(lat,lng)){ alert("Аэродром можно поставить только на своей территории!"); return; }
-                let icon = getAirportIcon();
-                airportMarker = L.marker([lat,lng], {icon}).addTo(map);
-                airportMarker.bindPopup('<b>АЭРОДРОМ</b>');
-                airportMarker.on('click', () => showAttackModal(airportMarker));
-                airportPlaced = true; gameActive = true; updateUI(); lastUpdate = performance.now();
-                if(isAI) initAI();
-                startRadarAnimation();
-                requestAnimationFrame(gameLoop);
-                if(economyInterval) clearInterval(economyInterval);
-                economyInterval = setInterval(() => { if(gameActive && !isSandbox){ let income = 5 + powerPlants.filter(p=>p.team===myTeam).length*3 + refineries.filter(r=>r.team===myTeam).length*15; resources += income; updateUI(); } else updateUI(); }, 1000);
-                showHint("📡 Теперь постройте Радар");
-                return;
-            }
-            if(buildMode){ 
-                if(!isOwnTerritory(e.latlng.lat, e.latlng.lng)){
-                    alert("Можно строить только на своей территории!");
-                    return;
-                }
-                tryBuild(e.latlng.lat, e.latlng.lng, buildMode); 
-                buildMode = null; 
-            }
-        });
-    });
+function getAirportIcon() {
+    try { return L.icon({ iconUrl: 'images/airport.png', iconSize: [48,48], iconAnchor: [24,24] }); }
+    catch(e){ return L.divIcon({ html:'🏠', iconSize:[48,48] }); }
+}
+function getRadarIcon() {
+    try { return L.icon({ iconUrl: 'images/radar.png', iconSize: [40,40], iconAnchor: [20,20] }); }
+    catch(e){ return L.divIcon({ html:'📡', iconSize:[40,40] }); }
+}
+function getPvoIcon() {
+    try { return L.icon({ iconUrl: 'images/pvo.png', iconSize: [40,40], iconAnchor: [20,20] }); }
+    catch(e){ return L.divIcon({ html:'🛡️', iconSize:[40,40] }); }
+}
+function getPowerPlantIcon() {
+    try { return L.icon({ iconUrl: 'images/powerplant.png', iconSize: [40,40], iconAnchor: [20,20] }); }
+    catch(e){ return L.divIcon({ html:'⚡', iconSize:[40,40] }); }
+}
+function getRefineryIcon() {
+    try { return L.icon({ iconUrl: 'images/refinery.png', iconSize: [40,40], iconAnchor: [20,20] }); }
+    catch(e){ return L.divIcon({ html:'⛽', iconSize:[40,40] }); }
+}
+function getRocketFactoryIcon() {
+    try { return L.icon({ iconUrl: 'images/rocket_factory.png', iconSize: [40,40], iconAnchor: [20,20] }); }
+    catch(e){ return L.divIcon({ html:'🏭', iconSize:[40,40] }); }
+}
+function getInterceptorIcon() {
+    try { return L.icon({ iconUrl: 'images/pvo_rocket.png', iconSize: [24,24], iconAnchor: [12,12] }); }
+    catch(e){ return L.divIcon({ html:'🚀', iconSize:[24,24] }); }
 }
 
-function initZones(cities) {
-    zones = [];
-    cities.forEach(z => {
-        let circle = L.circle(z.center, { radius: 15000, color: z.team === 'russia' ? '#ff5555' : '#55aaff', weight: 2, fillOpacity: 0.25 }).addTo(map);
-        let marker = L.marker(z.center, { icon: createCityMarker(z) }).addTo(map);
-        zones.push({ id: z.name, name: z.name, center: z.center, team: z.team, hp: z.hp, baseHp: z.baseHp, circle: circle, marker: marker });
-    });
-    updateZoneMarkers();
-    updateTotalPercent();
-}
-
-// ---- ОСТАЛЬНЫЕ ФУНКЦИИ ИГРОВОГО ДВИЖКА (без изменений, кроме оружия) ----
+// ---- ОБНОВЛЁННЫЙ СПИСОК ОРУЖИЯ (без cruise, ballistic, hypersonic) ----
 const weaponTypes = {
     // Российские
     shahed: { name: 'ШАХЕД', speed: 0.006, damage: 25, cost: 60, pvoChance: 0.08, spriteOffset: 0, img: 'drone.png' },
@@ -1049,42 +1009,20 @@ const weaponTypes = {
     stormshadow: { name: 'ШТОРМ ШАДОУ', speed: 0.035, damage: 120, cost: 400, pvoChance: 0.09, spriteOffset: 0, img: 'stormshadow.png' }
 };
 
+// Функция получения доступного оружия (сортировка по цене)
 function getAvailableWeapons(team) {
-    return team === 'russia' 
-        ? ['shahed', 'geran5', 'x101', 'kalibr', 'kinzhal', 'iskander']  // сортировка по цене
-        : ['lutyi', 'flamingo', 'stormshadow', 'grom2'];  // сортировка по цене
+    let list;
+    if (team === 'russia') {
+        list = ['shahed', 'geran5', 'x101', 'kalibr', 'kinzhal', 'iskander'];
+    } else { // ukraine
+        list = ['lutyi', 'flamingo', 'stormshadow', 'grom2'];
+    }
+    // Сортировка по цене (от дешёвого к дорогому)
+    list.sort((a, b) => weaponTypes[a].cost - weaponTypes[b].cost);
+    return list;
 }
 
-const costs = { radar: 180, pvo: 220, powerPlant: 250, refinery: 400, rocketFactory: 500 };
-const ranks = [
-    { level:1, xp:0, title:"Рядовой" }, { level:2, xp:500, title:"Сержант" }, { level:3, xp:1200, title:"Лейтенант" },
-    { level:4, xp:2500, title:"Капитан" }, { level:5, xp:5000, title:"Майор" }, { level:6, xp:9000, title:"Полковник" },
-    { level:7, xp:15000, title:"Генерал" }
-];
-let playerXP = 0;
-let playerStats = { wins:0, losses:0, citiesDestroyed:0, buildingsDestroyed:0, missilesLaunched:0, hits:0, totalShots:0 };
-let audioCtx = null;
-
-function playBeep(freq, duration, type='sine') {
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = freq; osc.type = type;
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.exponentialRampToValueAtTime(0.00001, now + duration);
-    osc.start(); osc.stop(now + duration);
-}
-
-function getAirportIcon() { try { return L.icon({ iconUrl: 'images/airport.png', iconSize: [48,48], iconAnchor: [24,24] }); } catch(e){ return L.divIcon({ html:'🏠', iconSize:[48,48] }); } }
-function getRadarIcon() { try { return L.icon({ iconUrl: 'images/radar.png', iconSize: [40,40], iconAnchor: [20,20] }); } catch(e){ return L.divIcon({ html:'📡', iconSize:[40,40] }); } }
-function getPvoIcon() { try { return L.icon({ iconUrl: 'images/pvo.png', iconSize: [40,40], iconAnchor: [20,20] }); } catch(e){ return L.divIcon({ html:'🛡️', iconSize:[40,40] }); } }
-function getPowerPlantIcon() { try { return L.icon({ iconUrl: 'images/powerplant.png', iconSize: [40,40], iconAnchor: [20,20] }); } catch(e){ return L.divIcon({ html:'⚡', iconSize:[40,40] }); } }
-function getRefineryIcon() { try { return L.icon({ iconUrl: 'images/refinery.png', iconSize: [40,40], iconAnchor: [20,20] }); } catch(e){ return L.divIcon({ html:'⛽', iconSize:[40,40] }); } }
-function getRocketFactoryIcon() { try { return L.icon({ iconUrl: 'images/rocket_factory.png', iconSize: [40,40], iconAnchor: [20,20] }); } catch(e){ return L.divIcon({ html:'🏭', iconSize:[40,40] }); } }
-function getInterceptorIcon() { try { return L.icon({ iconUrl: 'images/pvo_rocket.png', iconSize: [24,24], iconAnchor: [12,12] }); } catch(e){ return L.divIcon({ html:'🚀', iconSize:[24,24] }); } }
-
+// ---- ОСТАЛЬНЫЕ ФУНКЦИИ ИГРОВОГО ДВИЖКА (ваши, без изменений) ----
 function loadRealBorders(cb) {
     Promise.all([
         fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/RUS.geo.json').then(r=>r.json()).catch(()=>fallbackRussia),
@@ -1222,6 +1160,93 @@ function updateRankUI(){
 }
 function updateStatsAfterHit(damage, targetType, isHit){ playerStats.totalShots++; if(isHit){ playerStats.hits++; if(targetType === 'zone') playerStats.citiesDestroyed++; else playerStats.buildingsDestroyed++; } }
 function updateStatsAfterGame(victory){ if(victory) playerStats.wins++; else playerStats.losses++; if(victory) addXP(300); }
+
+const costs = { radar: 180, pvo: 220, powerPlant: 250, refinery: 400, rocketFactory: 500 };
+const ranks = [
+    { level:1, xp:0, title:"Рядовой" }, { level:2, xp:500, title:"Сержант" }, { level:3, xp:1200, title:"Лейтенант" },
+    { level:4, xp:2500, title:"Капитан" }, { level:5, xp:5000, title:"Майор" }, { level:6, xp:9000, title:"Полковник" },
+    { level:7, xp:15000, title:"Генерал" }
+];
+let playerXP = 0;
+let playerStats = { wins:0, losses:0, citiesDestroyed:0, buildingsDestroyed:0, missilesLaunched:0, hits:0, totalShots:0 };
+let audioCtx = null;
+
+function playBeep(freq, duration, type='sine') {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq; osc.type = type;
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.00001, now + duration);
+    osc.start(); osc.stop(now + duration);
+}
+
+// ---- ИНИЦИАЛИЗАЦИЯ ИГРЫ ----
+function initGameMapAndLogic(citiesArray) {
+    document.getElementById('menuScreen').style.display = 'none';
+    document.getElementById('lobbyScreen').style.display = 'none';
+    document.getElementById('gameContainer').style.display = 'block';
+    if(map) map.remove();
+    map = L.map('map', { zoomControl: false }).setView([55.0,40.0],5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}).addTo(map);
+    let ld = document.createElement('div'); ld.className='loading-indicator'; ld.innerText='Загрузка границ...'; document.body.appendChild(ld);
+    loadRealBorders(()=>{
+        if(ld) ld.remove();
+        initZones(citiesArray);
+        buildings = []; radars = []; pvoSystems = []; powerPlants = []; refineries = []; rocketFactories = []; projectiles = [];
+        if(isSandbox){
+            resources = 999999;
+            maxRadars = 999; maxPvo = 999; maxPowerPlants = 999; maxRefineries = 999;
+        } else {
+            if(setupDifficulty === "EASY") resources = 400;
+            else if(setupDifficulty === "NORMAL") resources = 300;
+            else if(setupDifficulty === "HARD") resources = 220;
+            else resources = 150;
+            maxRadars = 8; maxPvo = 12; maxPowerPlants = 5; maxRefineries = 3;
+        }
+        airportPlaced = false; updateUI();
+        map.off('click');
+        map.on('click', (e) => {
+            if(!airportPlaced){
+                let lat = e.latlng.lat, lng = e.latlng.lng;
+                if(!isOwnTerritory(lat,lng)){ alert("Аэродром можно поставить только на своей территории!"); return; }
+                let icon = getAirportIcon();
+                airportMarker = L.marker([lat,lng], {icon}).addTo(map);
+                airportMarker.bindPopup('<b>АЭРОДРОМ</b>');
+                airportMarker.on('click', () => showAttackModal(airportMarker));
+                airportPlaced = true; gameActive = true; updateUI(); lastUpdate = performance.now();
+                if(isAI) initAI();
+                startRadarAnimation();
+                requestAnimationFrame(gameLoop);
+                if(economyInterval) clearInterval(economyInterval);
+                economyInterval = setInterval(() => { if(gameActive && !isSandbox){ let income = 5 + powerPlants.filter(p=>p.team===myTeam).length*3 + refineries.filter(r=>r.team===myTeam).length*15; resources += income; updateUI(); } else updateUI(); }, 1000);
+                showHint("📡 Теперь постройте Радар");
+                return;
+            }
+            if(buildMode){ 
+                if(!isOwnTerritory(e.latlng.lat, e.latlng.lng)){
+                    alert("Можно строить только на своей территории!");
+                    return;
+                }
+                tryBuild(e.latlng.lat, e.latlng.lng, buildMode); 
+                buildMode = null; 
+            }
+        });
+    });
+}
+
+function initZones(cities) {
+    zones = [];
+    cities.forEach(z => {
+        let circle = L.circle(z.center, { radius: 15000, color: z.team === 'russia' ? '#ff5555' : '#55aaff', weight: 2, fillOpacity: 0.25 }).addTo(map);
+        let marker = L.marker(z.center, { icon: createCityMarker(z) }).addTo(map);
+        zones.push({ id: z.name, name: z.name, center: z.center, team: z.team, hp: z.hp, baseHp: z.baseHp, circle: circle, marker: marker });
+    });
+    updateZoneMarkers();
+    updateTotalPercent();
+}
 
 function tryBuild(lat,lng,type){
     if(!airportPlaced){ alert("Сначала постройте аэродром!"); return false; }
@@ -1383,6 +1408,7 @@ function createExplosion(lat,lng){
     let exp = L.marker([lat,lng], { icon: L.divIcon({ className:'', html:'<div class="explosion"></div>', iconSize:[60,60] }) }).addTo(map);
     setTimeout(()=>{ map.removeLayer(exp); },500);
 }
+
 function launchInterceptor(start,end){
     let missile = L.marker([start.lat,start.lng], { icon: getInterceptorIcon() }).addTo(map);
     let trail = L.polyline([[start.lat,start.lng]], { color:'#ffffaa', weight:3 }).addTo(map);
@@ -1399,7 +1425,7 @@ function launchInterceptor(start,end){
     },20);
 }
 
-// ===== AI (атакует игрока) =====
+// ===== AI (ваш код, адаптированный под новые типы) =====
 const priorityWeights = { refinery:100, city:90, pvo:80, radar:70, powerPlant:60, rocketFactory:85 };
 function chooseAITargets(maxTargets=3){
     let candidates = [];
@@ -1520,16 +1546,17 @@ function gameLoop(now) {
     requestAnimationFrame(gameLoop);
 }
 
-// ---- МОДАЛЬНЫЕ ОКНА (сортировка, шансы ПВО) ----
+// ---- МОДАЛЬНЫЕ ОКНА (обновлённое buildWeaponGrid) ----
 function buildWeaponGrid(){
     let container = document.getElementById('weaponGrid'); if(!container) return;
     container.innerHTML = '';
     let available = getAvailableWeapons(myTeam);
-    // Сортировка по цене (от дешёвого к дорогому) уже выполнена в getAvailableWeapons
+    // Сортировка по цене уже выполнена в getAvailableWeapons, но на всякий случай ещё раз:
+    available.sort((a, b) => weaponTypes[a].cost - weaponTypes[b].cost);
     available.forEach(type => {
         let w = weaponTypes[type];
-        let card = document.createElement('div'); 
-        card.className = 'weapon-card'; 
+        let card = document.createElement('div');
+        card.className = 'weapon-card';
         if(attackType === type) card.classList.add('selected');
         let imgSrc = getMissileImage(type, myTeam);
         let pvoChancePercent = Math.round(w.pvoChance * 100);
@@ -1548,7 +1575,10 @@ function buildWeaponGrid(){
     }
 }
 
-function updateCostDisplay(){ let w = weaponTypes[attackType]; document.getElementById('costDisplay').innerHTML = `СТОИМОСТЬ: ${w.cost * attackCount} ⚡`; }
+function updateCostDisplay(){ 
+    let w = weaponTypes[attackType]; 
+    if (w) document.getElementById('costDisplay').innerHTML = `СТОИМОСТЬ: ${w.cost * attackCount} ⚡`; 
+}
 function closeAttackModal(){ document.getElementById('attackModal').style.display='none'; }
 function showAttackModal(airport){
     currentAirport = airport;
@@ -1566,8 +1596,8 @@ function showAttackModal(airport){
     attackType = getAvailableWeapons(myTeam)[0];
     attackCount = 1;
     document.getElementById('countValue').innerText = attackCount;
-    updateCostDisplay();
     buildWeaponGrid();
+    updateCostDisplay();
     document.getElementById('attackModal').style.display = 'block';
 }
 
@@ -1592,9 +1622,63 @@ document.getElementById('attackConfirmBtn').onclick = function() {
     closeAttackModal();
 };
 
-// =================================================================
-// 8. МУЛЬТИПЛЕЕР: СИНХРОНИЗАЦИЯ ИГРЫ (адаптирован под логин)
-// =================================================================
+// ---- СТРОЙКА ----
+const buildToggle = document.getElementById('buildToggle');
+const buildMenu = document.getElementById('buildMenu');
+let buildMenuOpen = false;
+buildToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    buildMenuOpen = !buildMenuOpen;
+    buildMenu.classList.toggle('open', buildMenuOpen);
+    buildToggle.textContent = buildMenuOpen ? '🏗️ Закрыть' : '🏗️ Стройка';
+});
+document.querySelectorAll('#buildMenu .build-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (buildMenuOpen) {
+            buildMenu.classList.remove('open');
+            buildMenuOpen = false;
+            buildToggle.textContent = '🏗️ Стройка';
+        }
+    });
+});
+document.getElementById('buildRadarBtn').onclick = () => { buildMode = 'radar'; };
+document.getElementById('buildPvoBtn').onclick = () => { buildMode = 'pvo'; };
+document.getElementById('buildPowerPlantBtn').onclick = () => { buildMode = 'powerPlant'; };
+document.getElementById('buildRefineryBtn').onclick = () => { buildMode = 'refinery'; };
+document.getElementById('buildRocketFactoryBtn').onclick = () => { buildMode = 'rocketFactory'; };
+document.getElementById('cancelBuild').onclick = () => { buildMode = null; };
+
+// ---- КНОПКИ МЕНЮ ----
+document.getElementById('singleBtn').onclick = function() {
+    if (!currentUser) { alert("Сначала войдите в аккаунт!"); return; }
+    playBeep(400, 0.1);
+    setTimeout(() => {
+        playBeep(600, 0.1);
+        setTimeout(() => {
+            playBeep(800, 0.1);
+            showSetupModal('single');
+        }, 100);
+    }, 100);
+};
+document.getElementById('sandboxBtn').onclick = function() {
+    if (!currentUser) { alert("Сначала войдите в аккаунт!"); return; }
+    playBeep(400, 0.1);
+    setTimeout(() => {
+        playBeep(600, 0.1);
+        setTimeout(() => {
+            playBeep(800, 0.1);
+            showSetupModal('sandbox');
+        }, 100);
+    }, 100);
+};
+document.getElementById('tutorialBtn').onclick = function() {
+    alert("Обучение: постройте аэродром → радар → ПВО → атакуйте врага. В песочнице нет лимитов и бесконечная энергия. В мультиплеере играйте вдвоём.");
+};
+document.getElementById('logoutBtn').onclick = logout;
+
+// ============================================================
+// 8. МУЛЬТИПЛЕЕР: СИНХРОНИЗАЦИЯ ИГРЫ (ваш код)
+// ============================================================
 function startMultiplayerGame(roomId, data) {
     console.log("startMultiplayerGame", roomId, data);
     gameActive = false;
@@ -1975,66 +2059,7 @@ function applyGameState(state) {
     }
 }
 
-// =================================================================
-// 9. ОБРАБОТЧИКИ КНОПОК МЕНЮ
-// =================================================================
-document.getElementById('singleBtn').onclick = function() {
-    if (!currentUser) { alert("Сначала войдите в аккаунт!"); return; }
-    playBeep(400, 0.1);
-    setTimeout(() => {
-        playBeep(600, 0.1);
-        setTimeout(() => {
-            playBeep(800, 0.1);
-            showSetupModal('single');
-        }, 100);
-    }, 100);
-};
-
-document.getElementById('sandboxBtn').onclick = function() {
-    if (!currentUser) { alert("Сначала войдите в аккаунт!"); return; }
-    playBeep(400, 0.1);
-    setTimeout(() => {
-        playBeep(600, 0.1);
-        setTimeout(() => {
-            playBeep(800, 0.1);
-            showSetupModal('sandbox');
-        }, 100);
-    }, 100);
-};
-
-document.getElementById('tutorialBtn').onclick = function() {
-    alert("Обучение: постройте аэродром → радар → ПВО → атакуйте врага. В песочнице нет лимитов и бесконечная энергия. В мультиплеере играйте вдвоём.");
-};
-
-document.getElementById('logoutBtn').onclick = logout;
-
-const buildToggle = document.getElementById('buildToggle');
-const buildMenu = document.getElementById('buildMenu');
-let buildMenuOpen = false;
-buildToggle.addEventListener('click', function(e) {
-    e.stopPropagation();
-    buildMenuOpen = !buildMenuOpen;
-    buildMenu.classList.toggle('open', buildMenuOpen);
-    buildToggle.textContent = buildMenuOpen ? '🏗️ Закрыть' : '🏗️ Стройка';
-});
-document.querySelectorAll('#buildMenu .build-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        if (buildMenuOpen) {
-            buildMenu.classList.remove('open');
-            buildMenuOpen = false;
-            buildToggle.textContent = '🏗️ Стройка';
-        }
-    });
-});
-
-document.getElementById('buildRadarBtn').onclick = () => { buildMode = 'radar'; };
-document.getElementById('buildPvoBtn').onclick = () => { buildMode = 'pvo'; };
-document.getElementById('buildPowerPlantBtn').onclick = () => { buildMode = 'powerPlant'; };
-document.getElementById('buildRefineryBtn').onclick = () => { buildMode = 'refinery'; };
-document.getElementById('buildRocketFactoryBtn').onclick = () => { buildMode = 'rocketFactory'; };
-document.getElementById('cancelBuild').onclick = () => { buildMode = null; };
-
-console.log("✅ Игра полностью загружена. Аккаунты синхронизированы с вашей старой базой (логин). Оружие обновлено, сортировка и шансы ПВО добавлены.");
+console.log("✅ Игра полностью загружена. Аккаунты и лицензии — по-вашему. Оружие обновлено (Герань-5, Лютый, Гром-2, Фламинго, Шторм Шадоу), сортировка по цене и шансы ПВО добавлены.");
 </script>
 </body>
 </html>

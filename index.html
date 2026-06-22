@@ -1847,6 +1847,7 @@ function launchAttack(airport, targetObj, type, count){
 
 // ---- НОВАЯ СИСТЕМА ПЕРЕХВАТА (с учётом обучения) ----
 function tryIntercept(proj){
+if (proj.team === myTeam) return false;
     const now=Date.now();
     if(now-proj.lastInterceptCheck<2000) return false;
     proj.lastInterceptCheck=now;
